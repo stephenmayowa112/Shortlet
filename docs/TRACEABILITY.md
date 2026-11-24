@@ -1,0 +1,20 @@
+# Shortlet Connect V1 — Requirements Traceability Matrix (`TRACEABILITY.md`)
+
+| Req ID | Module / Requirement Summary | Implementation Code | Automated Verification |
+|--------|------------------------------|---------------------|------------------------|
+| **WEB-01** | Public homepage, category cards (apartments, cars, boats), location & price search, mobile nav | `components/MarketplaceView.tsx`, `components/Navbar.tsx` | `tests/run-all.ts` (public filter & approved-only invariant) |
+| **WEB-02** | Category-specific listing details, mandatory fees, rules, total quote before payment | `components/ListingDetailModal.tsx`, `lib/domain/pricing.ts` | `tests/run-all.ts` (quote breakdown tests) |
+| **WEB-03** | About, Contact, Terms, Privacy, Booking & Cancellation rules linked from footer | `components/LegalPagesView.tsx`, `components/Footer.tsx` | Verified in UI & build |
+| **WEB-04** | Apartment keyword search + grouped "More Filters" checkboxes + managed synonyms | `lib/domain/search.ts`, `components/MarketplaceView.tsx` | `tests/run-all.ts` (synonym & structured filter tests) |
+| **PART-01..05** | Individual partner registration, listing submission, duplicate detection, owner claims, privacy | `components/PartnerPortal.tsx`, `lib/domain/duplicate-detection.ts`, `lib/domain/privacy.ts` | `tests/run-all.ts` (duplicate & privacy allow-list tests) |
+| **PART-06..11** | Agent protection (optional manager phone & exact building no.), OTP channel check, Nigerian IDs, isolated dashboards | `components/PartnerPortal.tsx`, `app/api/otp/*`, `firestore.rules` | `tests/run-all.ts` + `firestore.rules` ESLint |
+| **ADM-01..02** | Role-based Operational Admin & Super Admin dashboards, suspension & immediate revocation, audit log | `components/AdminPortal.tsx`, `components/SuperAdminPortal.tsx`, `firestore.rules` | `tests/run-all.ts` (role & audit tests) |
+| **MSG-01..04** | Single official WhatsApp deep links with context + shared inbox behind `WhatsAppProvider` + dedup + assignment | `lib/domain/whatsapp.ts`, `lib/adapters/whatsapp-provider.ts`, `components/AdminPortal.tsx` | `tests/run-all.ts` (deep link & dedup tests) |
+| **INS-01** | Admin-managed live video inspection requests, external meeting URL, participants & outcome | `components/ListingDetailModal.tsx`, `components/AdminPortal.tsx` | `tests/run-all.ts` |
+| **BOOK-01..02** | Admin-led quotes, concurrency-safe availability holds, explicit lifecycle transitions | `lib/domain/booking-lifecycle.ts`, `lib/domain/availability.ts` | `tests/run-all.ts` (concurrency double-booking & FSM tests) |
+| **PRICE-01..02** | ₦30,000/night, ₦30,000/car day, ₦30,000/boat 2h block (ceil) + ₦10k/₦10k/₦10k internal split | `lib/domain/pricing.ts` | `tests/run-all.ts` (all 7 required PRD pricing cases) |
+| **FIN-01..04** | Paystack checkout + HMAC webhook + server verify, separated ledger, caution deposit liability & refunds | `lib/adapters/payment-provider.ts`, `app/api/paystack/*`, `components/SuperAdminPortal.tsx` | `tests/run-all.ts` (webhook idempotency, signature, split secrecy) |
+| **CUST-01..03** | Local browser saves (`localStorage`), passwordless OTP My Bookings, lightweight dashboard + merge | `components/CustomerBookingsView.tsx`, `app/api/otp/*` | `tests/run-all.ts` (OTP expiry, reuse, attempt limit, isolation) |
+| **REV-01..02** | Completed apartment-only 1–5 star reviews (1 per booking), audited moderation (no removing genuine negatives) | `components/CustomerBookingsView.tsx`, `components/AdminPortal.tsx` | `tests/run-all.ts` (apartment-only & 1-per-booking tests) |
+| **SUP-01** | Booking-linked support issues, Super Admin escalation, mandatory resolution notes | `components/AdminPortal.tsx`, `components/SuperAdminPortal.tsx` | `tests/run-all.ts` |
+| **MEDIA-01..02** | Permanent `sharp` server-side photo watermark (`SHORTLET CONNECT \| Listed by: <Agent>`), private originals, video adapter + flag | `lib/adapters/media-processor.ts`, `app/api/media/watermark/route.ts`, `app/api/media/public/[filename]/route.ts` | `tests/run-all.ts` (real buffer watermark test) |

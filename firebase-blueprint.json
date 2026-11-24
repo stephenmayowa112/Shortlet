@@ -1,0 +1,330 @@
+{
+  "entities": {
+    "UserAccount": {
+      "title": "UserAccount",
+      "description": "Authenticated user role and account status record. PII isolated to owner and super admin.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "role": { "type": "string", "enum": ["customer", "partner", "operational_admin", "super_admin"] },
+        "status": { "type": "string", "enum": ["active", "pending_review", "suspended", "deactivated"] },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "email": { "type": "string", "format": "email", "maxLength": 254 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "mfaEnforced": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "role", "status", "displayName", "email", "createdAt", "updatedAt"]
+    },
+    "PartnerProfile": {
+      "title": "PartnerProfile",
+      "description": "Individual partner registration, verification evidence reference, and review state.",
+      "type": "object",
+      "properties": {
+        "ownerUid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "partnerType": { "type": "string", "enum": ["agent", "owner", "manager"] },
+        "legalName": { "type": "string", "minLength": 2, "maxLength": 140 },
+        "agencyName": { "type": "string", "maxLength": 140 },
+        "displayAttribution": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "email": { "type": "string", "format": "email", "maxLength": 254 },
+        "phone": { "type": "string", "minLength": 7, "maxLength": 30 },
+        "channelVerified": { "type": "boolean" },
+        "idType": { "type": "string", "enum": ["nin_slip", "international_passport", "drivers_licence", "pvc"] },
+        "privateIdDocRef": { "type": "string", "minLength": 3, "maxLength": 260 },
+        "verificationStatus": { "type": "string", "enum": ["pending_review", "more_info_requested", "approved", "rejected", "suspended"] },
+        "reviewNotes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerUid", "partnerType", "legalName", "displayAttribution", "email", "phone", "channelVerified", "idType", "privateIdDocRef", "verificationStatus", "createdAt", "updatedAt"]
+    },
+    "PublicListing": {
+      "title": "PublicListing",
+      "description": "Explicit allow-listed public record for Super Admin approved listings only. Never contains exact addresses, owner contacts, internal splits, or unwatermarked media.",
+      "type": "object",
+      "properties": {
+        "listingId": { "type": "string", "minLength": 3, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "category": { "type": "string", "enum": ["apartment", "car", "boat"] },
+        "status": { "type": "string", "enum": ["approved"] },
+        "title": { "type": "string", "minLength": 4, "maxLength": 160 },
+        "summary": { "type": "string", "minLength": 10, "maxLength": 2000 },
+        "city": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "area": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "safeStreetLabel": { "type": "string", "maxLength": 120 },
+        "rateKobo": { "type": "integer" },
+        "rentalBasis": { "type": "string", "enum": ["per_night", "per_12h_or_24h_day", "per_hour"] },
+        "cautionFeeKobo": { "type": "integer" },
+        "currency": { "type": "string", "enum": ["NGN"] },
+        "originatorPartnerId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "originatorDisplayName": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "verifiedPropertyBadge": { "type": "boolean" },
+        "watermarkedPhotos": { "type": "array" },
+        "watermarkedVideoUrl": { "type": "string", "maxLength": 500 },
+        "featureIds": { "type": "array" },
+        "rules": { "type": "object" },
+        "specs": { "type": "object" },
+        "averageRating": { "type": "number" },
+        "reviewCount": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["listingId", "category", "status", "title", "summary", "city", "area", "rateKobo", "rentalBasis", "cautionFeeKobo", "currency", "originatorPartnerId", "originatorDisplayName", "verifiedPropertyBadge", "watermarkedPhotos", "featureIds", "createdAt", "updatedAt"]
+    },
+    "PrivateListingSubmission": {
+      "title": "PrivateListingSubmission",
+      "description": "Full partner listing record including pending/draft states, exact building number (optional), manager contact (optional), and duplicate check metadata. Strictly restricted to owning partner and admins.",
+      "type": "object",
+      "properties": {
+        "listingId": { "type": "string", "minLength": 3, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "originatorUid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "originatorDisplayName": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "category": { "type": "string", "enum": ["apartment", "car", "boat"] },
+        "status": { "type": "string", "enum": ["pending_review", "approved", "changes_requested", "rejected", "suspended"] },
+        "title": { "type": "string", "minLength": 4, "maxLength": 160 },
+        "summary": { "type": "string", "minLength": 10, "maxLength": 2000 },
+        "city": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "area": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "safeStreetLabel": { "type": "string", "maxLength": 120 },
+        "exactBuildingNumber": { "type": "string", "maxLength": 120 },
+        "propertyManagerPhone": { "type": "string", "maxLength": 30 },
+        "vehicleOrVesselIdentifier": { "type": "string", "maxLength": 120 },
+        "authorityEvidenceNote": { "type": "string", "maxLength": 600 },
+        "rateKobo": { "type": "integer" },
+        "cautionFeeKobo": { "type": "integer" },
+        "rentalBasis": { "type": "string", "enum": ["per_night", "per_12h_or_24h_day", "per_hour"] },
+        "featureIds": { "type": "array" },
+        "rules": { "type": "object" },
+        "specs": { "type": "object" },
+        "watermarkedPhotos": { "type": "array" },
+        "privateOriginalMediaRefs": { "type": "array" },
+        "duplicateFlagIds": { "type": "array" },
+        "verifiedPropertyBadge": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["listingId", "originatorUid", "originatorDisplayName", "category", "status", "title", "summary", "city", "area", "rateKobo", "cautionFeeKobo", "rentalBasis", "featureIds", "watermarkedPhotos", "createdAt", "updatedAt"]
+    },
+    "ListingOwnerSecret": {
+      "title": "ListingOwnerSecret",
+      "description": "Super Admin only private legal owner contact and ownership claim evidence. Operational admins strictly denied.",
+      "type": "object",
+      "properties": {
+        "listingId": { "type": "string", "minLength": 3, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "legalOwnerName": { "type": "string", "maxLength": 140 },
+        "legalOwnerPhone": { "type": "string", "maxLength": 30 },
+        "legalOwnerEmail": { "type": "string", "maxLength": 254 },
+        "ownershipClaimStatus": { "type": "string", "enum": ["none", "claim_pending", "verified_owner_assigned", "rejected"] },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["listingId", "ownershipClaimStatus", "updatedAt"]
+    },
+    "FeatureCatalogueItem": {
+      "title": "FeatureCatalogueItem",
+      "description": "Managed apartment filter catalogue with stable IDs and synonym lists.",
+      "type": "object",
+      "properties": {
+        "featureId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-z0-9_\\-]+$" },
+        "label": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "group": { "type": "string", "enum": ["entertainment", "views", "arrangement", "service", "booking_payment", "house_rules"] },
+        "active": { "type": "boolean" },
+        "synonyms": { "type": "array" },
+        "sortOrder": { "type": "integer" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["featureId", "label", "group", "active", "synonyms", "sortOrder", "updatedAt"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Customer booking with integer kobo breakdown, strict lifecycle status, and assigned operational admin. Never contains internal splits.",
+      "type": "object",
+      "properties": {
+        "bookingRef": { "type": "string", "minLength": 4, "maxLength": 48, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "listingId": { "type": "string", "minLength": 3, "maxLength": 64 },
+        "listingTitle": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "category": { "type": "string", "enum": ["apartment", "car", "boat"] },
+        "customerUid": { "type": "string", "maxLength": 128 },
+        "customerContact": { "type": "string", "minLength": 4, "maxLength": 254 },
+        "customerName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "assignedAdminUid": { "type": "string", "maxLength": 128 },
+        "partnerUid": { "type": "string", "maxLength": 128 },
+        "startIso": { "type": "string", "format": "date-time" },
+        "endIso": { "type": "string", "format": "date-time" },
+        "units": { "type": "integer" },
+        "rentalPrincipalKobo": { "type": "integer" },
+        "serviceChargeKobo": { "type": "integer" },
+        "cautionFeeKobo": { "type": "integer" },
+        "extrasKobo": { "type": "integer" },
+        "customerTotalKobo": { "type": "integer" },
+        "currency": { "type": "string", "enum": ["NGN"] },
+        "status": { "type": "string", "enum": ["requested", "quoted", "awaiting_payment", "confirmed", "checked_in", "checked_out", "completed", "cancelled", "refunded_disputed"] },
+        "paymentReference": { "type": "string", "maxLength": 120 },
+        "paymentVerified": { "type": "boolean" },
+        "cautionDepositStatus": { "type": "string", "enum": ["not_applicable", "pending_collection", "collected", "release_proposed", "deduction_proposed", "refunded", "disputed"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["bookingRef", "listingId", "listingTitle", "category", "customerContact", "customerName", "startIso", "endIso", "units", "rentalPrincipalKobo", "serviceChargeKobo", "cautionFeeKobo", "extrasKobo", "customerTotalKobo", "currency", "status", "paymentVerified", "cautionDepositStatus", "createdAt", "updatedAt"]
+    },
+    "AvailabilitySlot": {
+      "title": "AvailabilitySlot",
+      "description": "Atomic database lock per listing night/day/2-hour slot preventing concurrent double bookings.",
+      "type": "object",
+      "properties": {
+        "slotKey": { "type": "string", "minLength": 5, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "listingId": { "type": "string", "minLength": 3, "maxLength": 64 },
+        "bookingRef": { "type": "string", "minLength": 4, "maxLength": 48 },
+        "holdType": { "type": "string", "enum": ["hold", "confirmed"] },
+        "expiresAtIso": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["slotKey", "listingId", "bookingRef", "holdType", "createdAt"]
+    },
+    "LedgerEntry": {
+      "title": "LedgerEntry",
+      "description": "Staff-only financial ledger separating rental principal, service charge gross, ₦10k internal allocations, and caution deposit liability.",
+      "type": "object",
+      "properties": {
+        "bookingRef": { "type": "string", "minLength": 4, "maxLength": 48 },
+        "category": { "type": "string", "enum": ["rental_principal", "service_charge_gross", "coordinating_admin_allocation", "founder_allocation", "ads_ops_allocation", "caution_deposit_liability", "caution_refund_payout"] },
+        "amountKobo": { "type": "integer" },
+        "currency": { "type": "string", "enum": ["NGN"] },
+        "settlementStatus": { "type": "string", "enum": ["pending", "collected", "payable", "paid", "disputed"] },
+        "coordinatingAdminUid": { "type": "string", "maxLength": 128 },
+        "paystackReference": { "type": "string", "maxLength": 120 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["bookingRef", "category", "amountKobo", "currency", "settlementStatus", "createdAt"]
+    },
+    "EnquiryTicket": {
+      "title": "EnquiryTicket",
+      "description": "Official WhatsApp shared-inbox ticket with single active operational admin owner.",
+      "type": "object",
+      "properties": {
+        "ticketRef": { "type": "string", "minLength": 4, "maxLength": 48 },
+        "listingId": { "type": "string", "maxLength": 64 },
+        "listingTitle": { "type": "string", "maxLength": 160 },
+        "customerContact": { "type": "string", "minLength": 4, "maxLength": 120 },
+        "customerName": { "type": "string", "maxLength": 120 },
+        "assignedAdminUid": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "enum": ["open", "in_progress", "quoted", "closed"] },
+        "lastMessageText": { "type": "string", "maxLength": 1000 },
+        "internalNotes": { "type": "string", "maxLength": 2000 },
+        "providerMessageIds": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ticketRef", "customerContact", "status", "lastMessageText", "createdAt", "updatedAt"]
+    },
+    "LiveInspection": {
+      "title": "LiveInspection",
+      "description": "Admin-coordinated external live video inspection request, schedule, meeting URL, participants, and outcome.",
+      "type": "object",
+      "properties": {
+        "inspectionRef": { "type": "string", "minLength": 4, "maxLength": 48 },
+        "listingId": { "type": "string", "minLength": 3, "maxLength": 64 },
+        "listingTitle": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "customerContact": { "type": "string", "minLength": 4, "maxLength": 254 },
+        "customerName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "assignedAdminUid": { "type": "string", "maxLength": 128 },
+        "scheduledAtIso": { "type": "string", "format": "date-time" },
+        "meetingUrl": { "type": "string", "maxLength": 500 },
+        "participants": { "type": "array" },
+        "status": { "type": "string", "enum": ["requested", "scheduled", "completed", "cancelled", "no_show"] },
+        "outcomeNotes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["inspectionRef", "listingId", "listingTitle", "customerContact", "customerName", "status", "createdAt", "updatedAt"]
+    },
+    "ApartmentReview": {
+      "title": "ApartmentReview",
+      "description": "Verified 1-5 star apartment review linked one-to-one with a completed apartment booking.",
+      "type": "object",
+      "properties": {
+        "bookingRef": { "type": "string", "minLength": 4, "maxLength": 48 },
+        "listingId": { "type": "string", "minLength": 3, "maxLength": 64 },
+        "authorUid": { "type": "string", "maxLength": 128 },
+        "authorDisplayName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "rating": { "type": "integer" },
+        "comment": { "type": "string", "minLength": 5, "maxLength": 2000 },
+        "moderationStatus": { "type": "string", "enum": ["pending", "approved", "hidden", "removed"] },
+        "moderationReason": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["bookingRef", "listingId", "authorDisplayName", "rating", "comment", "moderationStatus", "createdAt", "updatedAt"]
+    },
+    "SupportIssue": {
+      "title": "SupportIssue",
+      "description": "Booking-linked guest support issue with escalation to Super Admin and mandatory resolution notes.",
+      "type": "object",
+      "properties": {
+        "bookingRef": { "type": "string", "minLength": 4, "maxLength": 48 },
+        "listingId": { "type": "string", "minLength": 3, "maxLength": 64 },
+        "assignedAdminUid": { "type": "string", "maxLength": 128 },
+        "severity": { "type": "string", "enum": ["low", "medium", "high", "escalated_super_admin"] },
+        "summary": { "type": "string", "minLength": 5, "maxLength": 500 },
+        "status": { "type": "string", "enum": ["open", "escalated", "closed"] },
+        "resolutionNotes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["bookingRef", "listingId", "severity", "summary", "status", "createdAt", "updatedAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable append-only audit trail for approvals, suspensions, reassignments, pricing overrides, payments, refunds, duplicate/ownership claims, and review moderation.",
+      "type": "object",
+      "properties": {
+        "actorUid": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "actorRole": { "type": "string", "enum": ["partner", "operational_admin", "super_admin", "system"] },
+        "action": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "targetType": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "targetId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "reason": { "type": "string", "minLength": 2, "maxLength": 600 },
+        "beforeSummary": { "type": "string", "maxLength": 1500 },
+        "afterSummary": { "type": "string", "maxLength": 1500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["actorUid", "actorRole", "action", "targetType", "targetId", "reason", "createdAt"]
+    },
+    "SystemConfig": {
+      "title": "SystemConfig",
+      "description": "Super Admin configurable operational settings (admin cap, pricing rules, round-robin, video watermarking flag, ID retention).",
+      "type": "object",
+      "properties": {
+        "operationalAdminCap": { "type": "integer" },
+        "serviceChargeUnitKobo": { "type": "integer" },
+        "adminSplitKobo": { "type": "integer" },
+        "founderSplitKobo": { "type": "integer" },
+        "adsOpsSplitKobo": { "type": "integer" },
+        "carPartialDayCutoffHours": { "type": "integer" },
+        "roundRobinEnabled": { "type": "boolean" },
+        "videoWatermarkEnabled": { "type": "boolean" },
+        "identityDocRetentionDays": { "type": "integer" },
+        "officialWhatsAppNumber": { "type": "string", "maxLength": 30 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["operationalAdminCap", "serviceChargeUnitKobo", "adminSplitKobo", "founderSplitKobo", "adsOpsSplitKobo", "carPartialDayCutoffHours", "roundRobinEnabled", "videoWatermarkEnabled", "identityDocRetentionDays", "officialWhatsAppNumber", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": { "$ref": "#/entities/UserAccount" }, "description": "User role and account status records." },
+    "/partnerProfiles/{partnerId}": { "schema": { "$ref": "#/entities/PartnerProfile" }, "description": "Individual partner profiles and private ID verification refs." },
+    "/publicListings/{listingId}": { "schema": { "$ref": "#/entities/PublicListing" }, "description": "Publicly readable approved-only listings with explicit allow-list fields." },
+    "/privateListings/{listingId}": { "schema": { "$ref": "#/entities/PrivateListingSubmission" }, "description": "Private partner listing submissions including pending/draft state and optional manager phone." },
+    "/listingOwnerSecrets/{listingId}": { "schema": { "$ref": "#/entities/ListingOwnerSecret" }, "description": "Super Admin only legal owner private contact details and ownership claim records." },
+    "/featureCatalogue/{featureId}": { "schema": { "$ref": "#/entities/FeatureCatalogueItem" }, "description": "Managed structured apartment feature catalogue and synonyms." },
+    "/bookings/{bookingId}": { "schema": { "$ref": "#/entities/Booking" }, "description": "Customer bookings and lifecycle state." },
+    "/availabilitySlots/{slotId}": { "schema": { "$ref": "#/entities/AvailabilitySlot" }, "description": "Atomic overlap-prevention lock documents per listing date/slot." },
+    "/ledgerEntries/{entryId}": { "schema": { "$ref": "#/entities/LedgerEntry" }, "description": "Staff-only separated financial ledger including internal ₦10k allocations." },
+    "/tickets/{ticketId}": { "schema": { "$ref": "#/entities/EnquiryTicket" }, "description": "Official WhatsApp shared inbox enquiry tickets." },
+    "/inspections/{inspectionId}": { "schema": { "$ref": "#/entities/LiveInspection" }, "description": "Admin-managed live video inspections and outcomes." },
+    "/reviews/{reviewId}": { "schema": { "$ref": "#/entities/ApartmentReview" }, "description": "Completed apartment stay reviews and moderation state." },
+    "/supportIssues/{issueId}": { "schema": { "$ref": "#/entities/SupportIssue" }, "description": "Booking-linked support issues and escalations." },
+    "/auditLogs/{logId}": { "schema": { "$ref": "#/entities/AuditLog" }, "description": "Immutable append-only audit log." },
+    "/systemConfig/{configId}": { "schema": { "$ref": "#/entities/SystemConfig" }, "description": "Global platform configuration editable only by Super Admin." }
+  }
+}
