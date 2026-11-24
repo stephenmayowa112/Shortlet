@@ -349,17 +349,17 @@ export function ListingDetailModal({
       role="dialog"
       aria-modal="true"
       aria-label={listing.title}
-      className="fixed inset-0 z-50 bg-[#111318]/70 backdrop-blur-sm overflow-y-auto p-3 sm:p-6"
+      className="fixed inset-0 z-50 bg-[#111318]/70 backdrop-blur-sm overflow-y-auto p-0 sm:p-6"
     >
-      <div className="max-w-6xl mx-auto bg-[#F8F7F4] rounded-2xl border border-stone-200 overflow-hidden shadow-2xl my-2 sm:my-6">
+      <div className="max-w-6xl mx-auto bg-[#F8F7F4] rounded-none sm:rounded-2xl border-0 sm:border border-stone-200 overflow-hidden shadow-2xl min-h-dvh sm:min-h-0 my-0 sm:my-6">
         {/* Top Modal Header */}
-        <div className="bg-white border-b border-stone-200 px-5 py-4 flex items-center justify-between gap-4 sticky top-0 z-20">
+        <div className="bg-white border-b border-stone-200 px-4 py-3 sm:px-5 sm:py-4 flex items-center justify-between gap-3 sticky top-0 z-20">
           <div className="min-w-0">
-            <p className="text-xs text-stone-500 font-mono">
+            <p className="text-[11px] sm:text-xs text-stone-500 font-mono truncate">
               {listing.listingId} · {listing.area}, {listing.city}
               {listing.safeStreetLabel ? ` · ${listing.safeStreetLabel}` : ""}
             </p>
-            <h2 className="font-display text-lg sm:text-xl font-semibold text-[#111318] truncate">
+            <h2 className="font-display text-base sm:text-xl font-semibold text-[#111318] truncate">
               {listing.title}
             </h2>
           </div>
@@ -368,29 +368,29 @@ export function ListingDetailModal({
             <button
               type="button"
               onClick={() => toggleGuestSave(listing.listingId)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-stone-300 bg-white text-[#111318] hover:bg-stone-50"
+              className="inline-flex items-center justify-center gap-1.5 px-3 min-h-[44px] sm:min-h-[40px] text-xs font-medium rounded-lg border border-stone-300 bg-white text-[#111318] hover:bg-stone-50 whitespace-nowrap"
             >
               <Heart
                 className={`w-4 h-4 ${
                   isSaved ? "fill-red-600 text-red-600" : "text-stone-600"
                 }`}
               />
-              {isSaved ? "Saved" : "Save"}
+              <span className="hidden xs:inline sm:inline">{isSaved ? "Saved" : "Save"}</span>
             </button>
             <button
               type="button"
               aria-label="Close listing details"
               onClick={onClose}
-              className="w-10 h-10 rounded-lg border border-stone-200 flex items-center justify-center text-stone-700 hover:bg-stone-100"
+              className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg border border-stone-200 flex items-center justify-center text-stone-700 hover:bg-stone-100"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 p-5 sm:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 p-4 sm:p-8 pb-12">
           {/* Left Column: Watermarked Media, Structured Amenities, Rules & Reviews */}
-          <div className="lg:col-span-7 space-y-8">
+          <div className="lg:col-span-7 space-y-6 sm:space-y-8">
             {/* Gallery */}
             <div className="space-y-3">
               <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-stone-200 border border-stone-200">
@@ -402,14 +402,14 @@ export function ListingDetailModal({
                 />
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-stone-600">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-stone-600">
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
                   {listing.watermarkedPhotos.map((src, idx) => (
                     <button
                       key={src + idx}
                       type="button"
                       onClick={() => setActivePhotoIdx(idx)}
-                      className={`w-16 h-12 rounded-md overflow-hidden border-2 transition-colors ${
+                      className={`w-16 h-12 rounded-md overflow-hidden border-2 shrink-0 transition-colors ${
                         activePhotoIdx === idx
                           ? "border-[#111318]"
                           : "border-transparent opacity-70 hover:opacity-100"
@@ -428,7 +428,7 @@ export function ListingDetailModal({
                 <a
                   href={listing.watermarkedPhotos[activePhotoIdx] ?? listing.watermarkedPhotos[0]}
                   download={`${listing.listingId}-watermarked.jpg`}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[#9A6B32] hover:underline"
+                  className="inline-flex items-center gap-1.5 min-h-[40px] sm:min-h-0 text-xs font-medium text-[#9A6B32] hover:underline shrink-0"
                 >
                   <Download className="w-3.5 h-3.5" />
                   Download watermarked photo

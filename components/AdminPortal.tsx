@@ -184,15 +184,15 @@ export function AdminPortal() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <label htmlFor="ops-admin-select" className="text-xs font-medium text-stone-600">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full lg:w-auto">
+          <label htmlFor="ops-admin-select" className="text-xs font-medium text-stone-600 shrink-0">
             Active Admin:
           </label>
           <select
             id="ops-admin-select"
             value={activeAdmin?.uid ?? ""}
             onChange={(e) => setActiveOpsAdminUid(e.target.value)}
-            className="px-3 py-2 text-xs font-medium bg-[#F8F7F4] border border-stone-300 rounded-lg"
+            className="w-full sm:w-auto min-h-[44px] sm:min-h-[38px] px-3 py-2 text-xs font-medium bg-[#F8F7F4] border border-stone-300 rounded-lg"
           >
             {opsAdmins.map((admin) => (
               <option key={admin.uid} value={admin.uid}>
@@ -218,7 +218,7 @@ export function AdminPortal() {
       ) : (
         <>
           {/* Tab Bar */}
-          <div className="flex flex-wrap items-center gap-2 border-b border-stone-200 pb-3">
+          <div className="flex items-center gap-2 border-b border-stone-200 pb-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
             {(
               [
                 { id: "enquiries", label: `My Enquiries (${myTickets.length})` },
@@ -234,7 +234,7 @@ export function AdminPortal() {
                 key={item.id}
                 type="button"
                 onClick={() => setTab(item.id)}
-                className={`px-3.5 py-2 text-xs font-semibold rounded-lg transition-colors ${
+                className={`px-3.5 min-h-[44px] sm:min-h-[38px] text-xs font-semibold rounded-lg whitespace-nowrap shrink-0 transition-colors ${
                   tab === item.id
                     ? "bg-[#111318] text-white"
                     : "text-stone-600 hover:bg-stone-200/70"
@@ -504,7 +504,7 @@ export function AdminPortal() {
                           </span>
                         </div>
                         {b.cautionDepositStatus === "collected" && (
-                          <div className="flex flex-wrap items-center gap-2">
+                          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2">
                             <input
                               type="number"
                               min={0}
@@ -516,7 +516,7 @@ export function AdminPortal() {
                                   [b.bookingRef]: e.target.value,
                                 }))
                               }
-                              className="w-48 px-2.5 py-1.5 text-xs font-mono bg-white border border-stone-300 rounded-lg"
+                              className="w-full sm:w-48 min-h-[40px] px-2.5 py-1.5 text-xs font-mono bg-white border border-stone-300 rounded-lg"
                             />
                             <input
                               type="text"
@@ -528,7 +528,7 @@ export function AdminPortal() {
                                   [b.bookingRef]: e.target.value,
                                 }))
                               }
-                              className="flex-1 min-w-[200px] px-2.5 py-1.5 text-xs bg-white border border-stone-300 rounded-lg"
+                              className="w-full sm:flex-1 min-h-[40px] px-2.5 py-1.5 text-xs bg-white border border-stone-300 rounded-lg"
                             />
                             <button
                               type="button"
@@ -544,7 +544,7 @@ export function AdminPortal() {
                                   cautionNotes[b.bookingRef] || "Post-checkout inspection completed."
                                 );
                               }}
-                              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#111318] text-white"
+                              className="w-full sm:w-auto min-h-[44px] sm:min-h-[38px] px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#111318] text-white"
                             >
                               Submit Proposal to Super Admin
                             </button>
@@ -776,7 +776,7 @@ export function AdminPortal() {
                     {rev.authorDisplayName} · {rev.rating}/5 Stars
                   </p>
                   <p className="text-xs text-stone-700">{rev.comment}</p>
-                  <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-stone-100">
+                  <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 pt-2 border-t border-stone-100">
                     <input
                       type="text"
                       placeholder="Moderation reason (required to hide/remove)"
@@ -784,30 +784,32 @@ export function AdminPortal() {
                       onChange={(e) =>
                         setModReasons((prev) => ({ ...prev, [rev.reviewId]: e.target.value }))
                       }
-                      className="flex-1 min-w-[220px] px-3 py-1.5 text-xs bg-[#F8F7F4] border border-stone-300 rounded-lg"
+                      className="w-full sm:flex-1 min-h-[40px] px-3 py-1.5 text-xs bg-[#F8F7F4] border border-stone-300 rounded-lg"
                     />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        moderateReview(
-                          rev.reviewId,
-                          "approved",
-                          modReasons[rev.reviewId] || "Verified completed stay — genuine guest feedback."
-                        )
-                      }
-                      className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#111318] text-white"
-                    >
-                      Approve & Publish
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        moderateReview(rev.reviewId, "hidden", modReasons[rev.reviewId] ?? "")
-                      }
-                      className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-stone-300 text-stone-700"
-                    >
-                      Hide (Policy Violation)
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          moderateReview(
+                            rev.reviewId,
+                            "approved",
+                            modReasons[rev.reviewId] || "Verified completed stay — genuine guest feedback."
+                          )
+                        }
+                        className="flex-1 sm:flex-none min-h-[44px] sm:min-h-[38px] px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#111318] text-white"
+                      >
+                        Approve & Publish
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          moderateReview(rev.reviewId, "hidden", modReasons[rev.reviewId] ?? "")
+                        }
+                        className="flex-1 sm:flex-none min-h-[44px] sm:min-h-[38px] px-3 py-1.5 text-xs font-semibold rounded-lg border border-stone-300 text-stone-700"
+                      >
+                        Hide (Policy Violation)
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

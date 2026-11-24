@@ -50,13 +50,13 @@ export function LegalPagesView({ initialSection = "about" }: LegalPagesViewProps
       </div>
 
       {/* Section Navigation */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 pb-1">
         {sections.map((item) => (
           <button
             key={item.id}
             type="button"
             onClick={() => setSection(item.id)}
-            className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-colors ${
+            className={`inline-flex items-center gap-2 px-4 min-h-[44px] sm:min-h-[38px] text-xs font-semibold rounded-lg whitespace-nowrap shrink-0 transition-colors ${
               section === item.id
                 ? "bg-[#111318] text-white"
                 : "bg-white border border-stone-200 text-stone-700 hover:bg-stone-100"

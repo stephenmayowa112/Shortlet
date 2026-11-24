@@ -124,7 +124,7 @@ export function Footer({ onNavigate }: FooterProps) {
           </ul>
         </div>
       </div>
-      <div className="border-t border-stone-100 py-4 text-center text-[11px] text-stone-500">
+      <div className="border-t border-stone-100 py-4 pb-20 md:pb-4 px-4 text-center text-[11px] text-stone-500">
         © {new Date().getFullYear()} Shortlet Connect Nigeria. All published listing media is watermarked and curated.
       </div>
     </footer>

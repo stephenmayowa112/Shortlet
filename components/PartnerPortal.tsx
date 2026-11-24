@@ -541,15 +541,15 @@ export function PartnerPortal() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <label htmlFor="partner-switcher" className="text-xs font-medium text-stone-600">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full lg:w-auto">
+          <label htmlFor="partner-switcher" className="text-xs font-medium text-stone-600 shrink-0">
             Switch Partner Account:
           </label>
           <select
             id="partner-switcher"
             value={activePartner?.ownerUid ?? ""}
             onChange={(e) => setActivePartnerUid(e.target.value)}
-            className="px-3 py-2 text-xs font-medium bg-[#F8F7F4] border border-stone-300 rounded-lg text-[#111318] focus:outline-none focus:ring-2 focus:ring-[#9A6B32]"
+            className="w-full sm:w-auto min-h-[44px] sm:min-h-[38px] px-3 py-2 text-xs font-medium bg-[#F8F7F4] border border-stone-300 rounded-lg text-[#111318] focus:outline-none focus:ring-2 focus:ring-[#9A6B32]"
           >
             {partnerProfiles.map((p) => (
               <option key={p.ownerUid} value={p.ownerUid}>
@@ -561,7 +561,7 @@ export function PartnerPortal() {
       </div>
 
       {/* Sub-navigation Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-stone-200 pb-3">
+      <div className="flex items-center gap-2 border-b border-stone-200 pb-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
         {(
           [
             { id: "listings", label: `My Listings (${myListings.length})` },
@@ -574,7 +574,7 @@ export function PartnerPortal() {
             key={item.id}
             type="button"
             onClick={() => setTab(item.id)}
-            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors ${
+            className={`px-4 min-h-[44px] sm:min-h-[38px] text-xs font-semibold rounded-lg whitespace-nowrap shrink-0 transition-colors ${
               tab === item.id
                 ? "bg-[#111318] text-white"
                 : "text-stone-600 hover:bg-stone-200/70"
@@ -675,38 +675,67 @@ export function PartnerPortal() {
                 No confirmed or in-progress bookings yet for your listings.
               </p>
             ) : (
-              <div className="bg-white border border-stone-200 rounded-xl overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
-                    <tr>
-                      <th className="py-3 px-4 font-semibold">Ref</th>
-                      <th className="py-3 px-4 font-semibold">Listing</th>
-                      <th className="py-3 px-4 font-semibold">Dates (WAT)</th>
-                      <th className="py-3 px-4 font-semibold">Rental Principal</th>
-                      <th className="py-3 px-4 font-semibold">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-stone-100">
-                    {myBookings.map((b) => (
-                      <tr key={b.bookingRef}>
-                        <td className="py-3 px-4 font-mono font-semibold text-[#111318]">
+              <>
+                {/* Mobile Stacked Cards */}
+                <div className="md:hidden space-y-3">
+                  {myBookings.map((b) => (
+                    <div
+                      key={b.bookingRef}
+                      className="bg-white border border-stone-200 rounded-xl p-4 space-y-2 text-xs"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono font-semibold text-[#111318]">
                           {b.bookingRef}
-                        </td>
-                        <td className="py-3 px-4 text-stone-700">{b.listingTitle}</td>
-                        <td className="py-3 px-4 font-mono text-stone-600 tabular-nums">
-                          {formatAfricaLagos(b.startIso)}
-                        </td>
-                        <td className="py-3 px-4 font-mono font-semibold text-[#111318] tabular-nums">
-                          {formatNairaFromKobo(b.rentalPrincipalKobo)}
-                        </td>
-                        <td className="py-3 px-4 capitalize font-semibold text-stone-700">
+                        </span>
+                        <span className="capitalize font-semibold text-[#9A6B32]">
                           {b.status.replace(/_/g, " ")}
-                        </td>
+                        </span>
+                      </div>
+                      <p className="font-semibold text-sm text-[#111318]">{b.listingTitle}</p>
+                      <div className="flex items-center justify-between text-stone-600 pt-1 border-t border-stone-100 font-mono tabular-nums">
+                        <span>{formatAfricaLagos(b.startIso)}</span>
+                        <span className="font-semibold text-[#111318]">
+                          {formatNairaFromKobo(b.rentalPrincipalKobo)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table */}
+                <div className="hidden md:block bg-white border border-stone-200 rounded-xl overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
+                      <tr>
+                        <th className="py-3 px-4 font-semibold">Ref</th>
+                        <th className="py-3 px-4 font-semibold">Listing</th>
+                        <th className="py-3 px-4 font-semibold">Dates (WAT)</th>
+                        <th className="py-3 px-4 font-semibold">Rental Principal</th>
+                        <th className="py-3 px-4 font-semibold">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-stone-100">
+                      {myBookings.map((b) => (
+                        <tr key={b.bookingRef}>
+                          <td className="py-3 px-4 font-mono font-semibold text-[#111318]">
+                            {b.bookingRef}
+                          </td>
+                          <td className="py-3 px-4 text-stone-700">{b.listingTitle}</td>
+                          <td className="py-3 px-4 font-mono text-stone-600 tabular-nums">
+                            {formatAfricaLagos(b.startIso)}
+                          </td>
+                          <td className="py-3 px-4 font-mono font-semibold text-[#111318] tabular-nums">
+                            {formatNairaFromKobo(b.rentalPrincipalKobo)}
+                          </td>
+                          <td className="py-3 px-4 capitalize font-semibold text-stone-700">
+                            {b.status.replace(/_/g, " ")}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         </div>

@@ -156,32 +156,32 @@ export function MarketplaceView({
   }, [publicListings]);
 
   return (
-    <div className="space-y-16 pb-20">
-      {/* 1. Architectural Hero Banner */}
-      <section className="relative overflow-hidden bg-[#111318]">
-        <div className="relative h-[520px] sm:h-[560px] w-full">
+    <div className="space-y-10 sm:space-y-16 pb-12 sm:pb-20">
+      {/* 1. Architectural Hero Banner (flows naturally on mobile so search & filters never clip) */}
+      <section className="relative bg-[#111318]">
+        <div className="relative min-h-[460px] sm:min-h-[540px] w-full flex flex-col justify-end">
           <img
             src="/images/hero_lagos_penthouse.jpg"
             alt="Luxury penthouse terrace overlooking the Lagos Lagoon at golden hour"
             referrerPolicy="no-referrer"
-            className="w-full h-full object-cover object-center"
+            className="absolute inset-0 w-full h-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#111318] via-[#111318]/55 to-[#111318]/25" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#111318] via-[#111318]/65 to-[#111318]/35" />
 
-          <div className="absolute inset-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-end pb-10 sm:pb-14">
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-7 sm:pb-12">
             <motion.div
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-3xl space-y-4"
+              className="max-w-3xl space-y-3 sm:space-y-4"
             >
               <p className="text-xs sm:text-sm font-medium tracking-wide text-stone-200">
                 Lagos Managed Hospitality · Apartments · Chauffeur Cars · Lagoon Yachts
               </p>
               <h1
-                className="font-display font-semibold text-white tracking-tight leading-[1.08]"
+                className="font-display font-semibold text-white tracking-tight leading-[1.1]"
                 style={{
-                  fontSize: "clamp(2.1rem, 4.2vw, 3.6rem)",
+                  fontSize: "clamp(1.75rem, 4.2vw, 3.5rem)",
                   textWrap: "balance",
                 }}
               >
@@ -193,12 +193,12 @@ export function MarketplaceView({
             </motion.div>
 
             {/* Interactive Search & Category Bar */}
-            <div className="mt-7 bg-white rounded-xl p-3 sm:p-4 shadow-xl border border-stone-200/90 max-w-5xl">
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 mb-3 border-b border-stone-200/80">
+            <div className="mt-6 sm:mt-7 bg-white rounded-xl p-3 sm:p-4 shadow-xl border border-stone-200/90 max-w-5xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 mb-3 border-b border-stone-200/80">
                 <div
                   role="tablist"
                   aria-label="Listing categories"
-                  className="inline-flex items-center gap-1 p-1 bg-stone-100 rounded-lg"
+                  className="flex items-center gap-1 p-1 bg-stone-100 rounded-lg overflow-x-auto no-scrollbar max-w-full"
                 >
                   {(
                     [
@@ -214,7 +214,7 @@ export function MarketplaceView({
                       role="tab"
                       aria-selected={category === tab.id}
                       onClick={() => setCategory(tab.id)}
-                      className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors whitespace-nowrap shrink-0 ${
+                      className={`px-3 min-h-[38px] sm:min-h-[34px] text-xs sm:text-sm font-medium rounded-md transition-colors whitespace-nowrap shrink-0 ${
                         category === tab.id
                           ? "bg-[#111318] text-white"
                           : "text-stone-600 hover:text-[#111318]"
@@ -229,7 +229,7 @@ export function MarketplaceView({
                   <button
                     type="button"
                     onClick={() => setMoreFiltersOpen((v) => !v)}
-                    className={`inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border transition-colors whitespace-nowrap shrink-0 ${
+                    className={`inline-flex items-center justify-center gap-2 px-3.5 min-h-[44px] sm:min-h-[38px] text-xs sm:text-sm font-medium rounded-lg border transition-colors whitespace-nowrap shrink-0 w-full sm:w-auto ${
                       moreFiltersOpen || activeFilterCount > 0
                         ? "border-[#111318] bg-[#111318] text-white"
                         : "border-stone-300 text-[#111318] hover:bg-stone-100"
@@ -241,7 +241,7 @@ export function MarketplaceView({
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 sm:gap-3">
                 <div className="sm:col-span-5 relative">
                   <label htmlFor="sc-keyword-search" className="sr-only">
                     Search keywords or amenities
@@ -252,8 +252,8 @@ export function MarketplaceView({
                     type="text"
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
-                    placeholder="Try “private pool”, “private cinema”, “terrace”, “self compound”"
-                    className="w-full h-11 pl-10 pr-3 text-sm rounded-lg border border-stone-200 bg-stone-50/60 text-[#111318] placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#9A6B32] focus:bg-white"
+                    placeholder="Try “private pool”, “cinema”, “self compound”"
+                    className="w-full h-11 pl-10 pr-3 text-base sm:text-sm rounded-lg border border-stone-200 bg-stone-50/60 text-[#111318] placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#9A6B32] focus:bg-white"
                   />
                 </div>
 
@@ -268,7 +268,7 @@ export function MarketplaceView({
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="Area (Lekki Phase 1, Old Ikoyi, VI)"
-                    className="w-full h-11 pl-10 pr-3 text-sm rounded-lg border border-stone-200 bg-stone-50/60 text-[#111318] placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#9A6B32] focus:bg-white"
+                    className="w-full h-11 pl-10 pr-3 text-base sm:text-sm rounded-lg border border-stone-200 bg-stone-50/60 text-[#111318] placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#9A6B32] focus:bg-white"
                   />
                 </div>
 
@@ -284,7 +284,7 @@ export function MarketplaceView({
                     value={maxPriceNaira}
                     onChange={(e) => setMaxPriceNaira(e.target.value)}
                     placeholder="Max rate (₦)"
-                    className="w-full h-11 px-3.5 text-sm font-mono tabular-nums rounded-lg border border-stone-200 bg-stone-50/60 text-[#111318] placeholder:font-sans placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#9A6B32] focus:bg-white"
+                    className="w-full h-11 px-3.5 text-base sm:text-sm font-mono tabular-nums rounded-lg border border-stone-200 bg-stone-50/60 text-[#111318] placeholder:font-sans placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#9A6B32] focus:bg-white"
                   />
                 </div>
               </div>
@@ -566,7 +566,7 @@ export function MarketplaceView({
                         e.stopPropagation();
                         toggleGuestSave(listing.listingId);
                       }}
-                      className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center text-[#111318] shadow-sm hover:bg-white transition-colors"
+                      className="absolute top-3 right-3 w-11 h-11 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center text-[#111318] shadow-sm hover:bg-white transition-colors"
                     >
                       <Heart
                         className={`w-4 h-4 ${
@@ -577,7 +577,7 @@ export function MarketplaceView({
                   </div>
 
                   {/* Clean Unboxed Metadata & Pricing */}
-                  <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                  <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-2 text-xs text-stone-500">
                         <span className="truncate">{metaParts.join(" · ")}</span>
@@ -628,7 +628,7 @@ export function MarketplaceView({
                       <button
                         type="button"
                         onClick={() => onSelectListing(listing, selectedFeatureIds)}
-                        className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-[#111318] text-white hover:bg-stone-800 transition-colors whitespace-nowrap shrink-0"
+                        className="px-4 min-h-[44px] sm:min-h-[38px] text-xs font-semibold rounded-lg bg-[#111318] text-white hover:bg-stone-800 transition-colors whitespace-nowrap shrink-0"
                       >
                         View & Quote
                       </button>

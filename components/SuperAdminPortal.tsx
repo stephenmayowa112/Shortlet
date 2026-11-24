@@ -154,7 +154,7 @@ export function SuperAdminPortal() {
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-stone-200 pb-3">
+      <div className="flex items-center gap-2 border-b border-stone-200 pb-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
         {(
           [
             { id: "approvals", label: "Approvals & Claims" },
@@ -168,7 +168,7 @@ export function SuperAdminPortal() {
             key={item.id}
             type="button"
             onClick={() => setTab(item.id)}
-            className={`px-3.5 py-2 text-xs font-semibold rounded-lg transition-colors ${
+            className={`px-3.5 min-h-[44px] sm:min-h-[38px] text-xs font-semibold rounded-lg whitespace-nowrap shrink-0 transition-colors ${
               tab === item.id
                 ? "bg-[#111318] text-white"
                 : "text-stone-600 hover:bg-stone-200/70"
@@ -678,8 +678,51 @@ export function SuperAdminPortal() {
             ))}
           </div>
 
-          {/* Full Separated Ledger Table */}
-          <div className="bg-white border border-stone-200 rounded-xl overflow-x-auto">
+          {/* Full Separated Ledger — Mobile Cards & Desktop Table */}
+          <div className="md:hidden space-y-3">
+            {ledgerEntries.map((entry) => (
+              <div
+                key={entry.entryId}
+                className="bg-white border border-stone-200 rounded-xl p-4 space-y-2 text-xs"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono font-semibold text-[#111318]">
+                    {entry.bookingRef}
+                  </span>
+                  <span className="capitalize font-semibold text-[#9A6B32]">
+                    {entry.settlementStatus}
+                  </span>
+                </div>
+                <p className="capitalize text-stone-700 font-medium">
+                  {entry.category.replace(/_/g, " ")}
+                </p>
+                <div className="flex items-center justify-between pt-2 border-t border-stone-100">
+                  <span className="font-mono font-bold text-sm text-[#111318] tabular-nums">
+                    {formatNairaFromKobo(entry.amountKobo)}
+                  </span>
+                  {entry.settlementStatus !== "paid" ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        markLedgerSettled(
+                          entry.entryId,
+                          "paid" as LedgerEntry["settlementStatus"],
+                          "Manual bank settlement verified by Super Admin."
+                        )
+                      }
+                      className="px-3 min-h-[38px] text-xs font-semibold rounded-lg border border-stone-300 text-[#111318]"
+                    >
+                      Mark Paid
+                    </button>
+                  ) : (
+                    <span className="font-mono text-[11px] text-stone-500">{entry.entryId}</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden md:block bg-white border border-stone-200 rounded-xl overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
                 <tr>
@@ -914,53 +957,81 @@ export function SuperAdminPortal() {
 
       {/* TAB 5: Immutable Append-Only Audit Log (Invariant 5) */}
       {tab === "audit" && (
-        <div className="bg-white border border-stone-200 rounded-xl overflow-x-auto">
-          <div className="p-4 border-b border-stone-200 flex items-center justify-between">
+        <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+          <div className="p-4 border-b border-stone-200 flex flex-wrap items-center justify-between gap-2">
             <h4 className="font-display text-base font-bold text-[#111318] flex items-center gap-2">
               <ClipboardList className="w-4 h-4 text-[#9A6B32]" />
               Immutable Governance Audit Trail (Read-Only)
             </h4>
             <span className="text-xs font-mono text-stone-500">Timezone: Africa/Lagos (WAT)</span>
           </div>
-          <table className="w-full text-left text-xs">
-            <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
-              <tr>
-                <th className="py-3 px-4 font-semibold">Timestamp (WAT)</th>
-                <th className="py-3 px-4 font-semibold">Actor</th>
-                <th className="py-3 px-4 font-semibold">Action</th>
-                <th className="py-3 px-4 font-semibold">Target</th>
-                <th className="py-3 px-4 font-semibold">Reason & Change Summary</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-100">
-              {auditLogs.map((log) => (
-                <tr key={log.logId}>
-                  <td className="py-3 px-4 font-mono text-stone-600 whitespace-nowrap tabular-nums">
+
+          {/* Mobile Stacked Audit Cards */}
+          <div className="md:hidden divide-y divide-stone-100">
+            {auditLogs.map((log) => (
+              <div key={log.logId} className="p-4 space-y-1.5 text-xs">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono font-semibold text-[#111318]">{log.action}</span>
+                  <span className="font-mono text-[11px] text-stone-500 tabular-nums">
                     {formatAfricaLagos(log.createdAt)}
-                  </td>
-                  <td className="py-3 px-4 text-stone-700">
-                    <span className="font-mono">{log.actorUid}</span>{" "}
-                    <span className="text-stone-500">({log.actorRole})</span>
-                  </td>
-                  <td className="py-3 px-4 font-mono font-semibold text-[#111318]">
-                    {log.action}
-                  </td>
-                  <td className="py-3 px-4 font-mono text-stone-600">
-                    {log.targetType}: {log.targetId}
-                  </td>
-                  <td className="py-3 px-4 text-stone-700">
-                    <p>{log.reason}</p>
-                    {(log.beforeSummary || log.afterSummary) && (
-                      <p className="text-[11px] font-mono text-stone-500 mt-0.5">
-                        {log.beforeSummary ? `${log.beforeSummary} → ` : ""}
-                        {log.afterSummary}
-                      </p>
-                    )}
-                  </td>
+                  </span>
+                </div>
+                <p className="text-stone-600 font-mono text-[11px]">
+                  {log.actorUid} ({log.actorRole}) · {log.targetType}: {log.targetId}
+                </p>
+                <p className="text-stone-700">{log.reason}</p>
+                {(log.beforeSummary || log.afterSummary) && (
+                  <p className="text-[11px] font-mono text-stone-500 break-all">
+                    {log.beforeSummary ? `${log.beforeSummary} → ` : ""}
+                    {log.afterSummary}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Audit Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
+                <tr>
+                  <th className="py-3 px-4 font-semibold">Timestamp (WAT)</th>
+                  <th className="py-3 px-4 font-semibold">Actor</th>
+                  <th className="py-3 px-4 font-semibold">Action</th>
+                  <th className="py-3 px-4 font-semibold">Target</th>
+                  <th className="py-3 px-4 font-semibold">Reason & Change Summary</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-stone-100">
+                {auditLogs.map((log) => (
+                  <tr key={log.logId}>
+                    <td className="py-3 px-4 font-mono text-stone-600 whitespace-nowrap tabular-nums">
+                      {formatAfricaLagos(log.createdAt)}
+                    </td>
+                    <td className="py-3 px-4 text-stone-700">
+                      <span className="font-mono">{log.actorUid}</span>{" "}
+                      <span className="text-stone-500">({log.actorRole})</span>
+                    </td>
+                    <td className="py-3 px-4 font-mono font-semibold text-[#111318]">
+                      {log.action}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-stone-600">
+                      {log.targetType}: {log.targetId}
+                    </td>
+                    <td className="py-3 px-4 text-stone-700">
+                      <p>{log.reason}</p>
+                      {(log.beforeSummary || log.afterSummary) && (
+                        <p className="text-[11px] font-mono text-stone-500 mt-0.5">
+                          {log.beforeSummary ? `${log.beforeSummary} → ` : ""}
+                          {log.afterSummary}
+                        </p>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

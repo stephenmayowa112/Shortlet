@@ -132,7 +132,7 @@ function ShortletConnectAppShell() {
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 max-w-md px-4 py-3 rounded-xl bg-[#111318] text-white text-xs font-medium shadow-xl border border-stone-700"
+          className="fixed bottom-20 md:bottom-5 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50 sm:max-w-md px-4 py-3 rounded-xl bg-[#111318] text-white text-xs font-medium shadow-xl border border-stone-700 text-center sm:text-left"
         >
           {toastMessage}
         </div>
