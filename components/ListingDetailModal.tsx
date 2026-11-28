@@ -455,10 +455,10 @@ export function ListingDetailModal({
               <div className="space-y-5 pt-4 border-t border-stone-200">
                 <div className="flex items-center justify-between">
                   <h3 className="font-display text-lg font-semibold text-[#111318]">
-                    Approved Features & House Rules
+                    Features &amp; House Rules
                   </h3>
                   <span className="text-xs text-stone-500">
-                    Partner claims verified at approval
+                    Verified property features
                   </span>
                 </div>
 
@@ -599,7 +599,7 @@ export function ListingDetailModal({
 
                 {approvedApartmentReviews.length === 0 ? (
                   <p className="text-sm text-stone-500">
-                    No approved reviews yet. Only customers with a completed apartment stay may leave a review.
+                    No guest reviews yet. Only customers with a completed apartment stay may leave a review.
                   </p>
                 ) : (
                   <div className="space-y-3">

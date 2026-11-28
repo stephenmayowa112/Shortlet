@@ -184,7 +184,7 @@ export function CustomerBookingsView({
               No saved listings yet
             </h2>
             <p className="text-sm text-stone-600 max-w-md mx-auto">
-              Tap the heart icon on any approved apartment, car, or boat to keep it here for quick comparison.
+              Tap the heart icon on any apartment, car, or boat to keep it here for quick comparison.
             </p>
           </div>
         ) : (
@@ -195,12 +195,18 @@ export function CustomerBookingsView({
                 className="bg-white border border-stone-200 rounded-xl overflow-hidden flex flex-col"
               >
                 <div className="relative aspect-[4/3] bg-stone-200">
-                  <img
-                    src={listing.watermarkedPhotos[0]}
-                    alt={listing.title}
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => onOpenListing(listing)}
+                    className="w-full h-full block text-left focus-visible:outline-none"
+                  >
+                    <img
+                      src={listing.watermarkedPhotos[0]}
+                      alt={listing.title}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
                   <button
                     type="button"
                     aria-label="Remove saved listing"
@@ -215,20 +221,26 @@ export function CustomerBookingsView({
                     <p className="text-xs text-stone-500">
                       {listing.category} · {listing.area}
                     </p>
-                    <h3 className="font-display text-base font-semibold text-[#111318] mt-1">
-                      {listing.title}
-                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => onOpenListing(listing)}
+                      className="text-left block w-full"
+                    >
+                      <h3 className="font-display text-base font-semibold text-[#111318] mt-1 hover:text-[#9A6B32] transition-colors">
+                        {listing.title}
+                      </h3>
+                    </button>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t border-stone-100">
-                    <span className="font-mono tabular-nums text-sm font-semibold text-[#111318]">
-                      {formatNairaFromKobo(listing.rateKobo)}
+                    <span className="text-xs font-medium text-stone-500">
+                      Click to view rates
                     </span>
                     <button
                       type="button"
                       onClick={() => onOpenListing(listing)}
                       className="inline-flex items-center gap-1 text-xs font-semibold text-[#9A6B32] hover:underline"
                     >
-                      Open Listing <ArrowRight className="w-3.5 h-3.5" />
+                      View Rates &amp; Details <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>

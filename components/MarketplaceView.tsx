@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { useMarketplace } from "@/components/MarketplaceProvider";
 import { filterPublicListings } from "@/lib/domain/search";
-import { formatNairaFromKobo } from "@/lib/domain/pricing";
 import type {
   ApartmentSpecs,
   BoatSpecs,
@@ -294,7 +293,7 @@ export function MarketplaceView({
                 <div className="mt-4 pt-4 border-t border-stone-200 space-y-5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-xs text-stone-600">
-                      Matches approved structured apartment attributes and managed synonyms. Unspecified features are never treated as present.
+                      Matches verified apartment features and amenities. Unspecified features are never treated as present.
                     </p>
                     <button
                       type="button"
@@ -400,21 +399,18 @@ export function MarketplaceView({
               cat: "apartment" as const,
               title: "Shortlet Apartments",
               subtitle: "₦30,000 service charge per booked night · Live video inspection available",
-              count: categoryCounts.apartment,
               icon: Building2,
             },
             {
               cat: "car" as const,
               title: "Executive Cars",
               subtitle: "₦30,000 service charge per 12h/24h chargeable day · Chauffeur options",
-              count: categoryCounts.car,
               icon: Car,
             },
             {
               cat: "boat" as const,
               title: "Lagoon Boats & Yachts",
               subtitle: "₦30,000 per 2-hour block (rounded up) · Licensed crew & safety gear",
-              count: categoryCounts.boat,
               icon: Ship,
             },
           ].map((item) => {
@@ -431,19 +427,12 @@ export function MarketplaceView({
                     : "bg-white text-[#111318] border-stone-200 hover:border-stone-400"
                 }`}
               >
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center mb-3">
                   <Icon
                     className={`w-5 h-5 ${
                       isSelected ? "text-amber-300" : "text-[#9A6B32]"
                     }`}
                   />
-                  <span
-                    className={`text-xs font-mono tabular-nums ${
-                      isSelected ? "text-stone-300" : "text-stone-500"
-                    }`}
-                  >
-                    {item.count} approved
-                  </span>
                 </div>
                 <h2 className="font-display text-lg font-semibold">{item.title}</h2>
                 <p
@@ -464,11 +453,11 @@ export function MarketplaceView({
         <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200 pb-4">
           <div>
             <h2 className="font-display text-2xl sm:text-3xl font-semibold text-[#111318] tracking-tight">
-              Approved Collection
+              Featured Collection
             </h2>
             <p className="text-sm text-stone-600 mt-1">
-              Showing {filteredListings.length} of {publicListings.length} verified public listing
-              {publicListings.length === 1 ? "" : "s"}. Unapproved drafts are strictly excluded.
+              Showing {filteredListings.length} of {publicListings.length} curated listing
+              {publicListings.length === 1 ? "" : "s"}.
             </p>
           </div>
           {(keyword || location || maxPriceNaira || activeFilterCount > 0 || category !== "all") && (
@@ -486,7 +475,7 @@ export function MarketplaceView({
         {filteredListings.length === 0 ? (
           <div className="bg-white border border-stone-200 rounded-xl p-10 text-center space-y-3">
             <p className="font-display text-lg font-semibold text-[#111318]">
-              No approved listings match those exact filters
+              No listings match those exact filters
             </p>
             <p className="text-sm text-stone-600 max-w-md mx-auto">
               Shortlet Connect only matches verified, explicitly declared attributes. Try removing one constraint or broadening your location.
@@ -496,19 +485,13 @@ export function MarketplaceView({
               onClick={clearAllFilters}
               className="mt-2 inline-flex items-center px-4 py-2 text-sm font-semibold rounded-lg bg-[#111318] text-white hover:bg-stone-800"
             >
-              Show All Approved Listings
+              Show All Listings
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
             {filteredListings.map((listing) => {
               const isSaved = guestSavedIds.includes(listing.listingId);
-              const basisLabel =
-                listing.category === "apartment"
-                  ? "/ night"
-                  : listing.category === "car"
-                  ? "/ day"
-                  : "/ hour";
 
               const metaParts: string[] = [
                 listing.category.charAt(0).toUpperCase() + listing.category.slice(1),
@@ -613,24 +596,16 @@ export function MarketplaceView({
                     </div>
 
                     <div className="pt-3 border-t border-stone-100 flex items-center justify-between gap-3">
-                      <div>
-                        <p className="font-mono tabular-nums text-base font-semibold text-[#111318]">
-                          {formatNairaFromKobo(listing.rateKobo)}
-                          <span className="font-sans text-xs font-normal text-stone-500 ml-1">
-                            {basisLabel}
-                          </span>
-                        </p>
-                        <p className="text-[11px] text-stone-500">
-                          + ₦30,000 service charge / unit
-                        </p>
-                      </div>
+                      <p className="text-xs font-medium text-stone-500">
+                        Click to view rates &amp; quote
+                      </p>
 
                       <button
                         type="button"
                         onClick={() => onSelectListing(listing, selectedFeatureIds)}
                         className="px-4 min-h-[44px] sm:min-h-[38px] text-xs font-semibold rounded-lg bg-[#111318] text-white hover:bg-stone-800 transition-colors whitespace-nowrap shrink-0"
                       >
-                        View & Quote
+                        View Rates &amp; Details
                       </button>
                     </div>
                   </div>
