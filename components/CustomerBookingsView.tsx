@@ -115,7 +115,11 @@ export function CustomerBookingsView({
       const res = await fetch("/api/otp/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ challengeId, code: otpCode.trim() }),
+        body: JSON.stringify({
+          challengeId,
+          code: otpCode.trim(),
+          contact: contactInput.trim(),
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Verification failed.");
@@ -320,14 +324,19 @@ export function CustomerBookingsView({
                   }
                   className="w-full h-11 px-3.5 text-sm rounded-lg border border-stone-300 bg-white focus:ring-2 focus:ring-[#9A6B32] focus:outline-none"
                 />
-                <p className="text-[11px] text-stone-500 mt-1">
-                  Demo guest record available for{" "}
-                  <span className="font-mono text-[#111318]">adaeze.guest@example.com</span>.
-                </p>
+                {process.env.NODE_ENV !== "production" && (
+                  <p className="text-[11px] text-stone-500 mt-1">
+                    Demo guest record available for{" "}
+                    <span className="font-mono text-[#111318]">adaeze.guest@example.com</span>.
+                  </p>
+                )}
               </div>
 
               {otpError && (
-                <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">
+                <p
+                  role="alert"
+                  className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg p-3"
+                >
                   {otpError}
                 </p>
               )}
@@ -374,7 +383,10 @@ export function CustomerBookingsView({
               </div>
 
               {otpError && (
-                <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">
+                <p
+                  role="alert"
+                  className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg p-3"
+                >
                   {otpError}
                 </p>
               )}

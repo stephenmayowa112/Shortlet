@@ -11,7 +11,6 @@ import {
   Lock,
   Plus,
   ShieldAlert,
-  Sparkles,
   Upload,
   UserPlus,
 } from "lucide-react";
@@ -25,7 +24,7 @@ import type {
   RentalBasis,
 } from "@/lib/types";
 
-type PartnerTab = "listings" | "submit" | "studio" | "register";
+type PartnerTab = "listings" | "submit" | "register";
 
 export function PartnerPortal() {
   const {
@@ -108,17 +107,6 @@ export function PartnerPortal() {
     previewUrl?: string;
   } | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  // --- AI Listing Photo Studio State (gemini-nano-banana-2.1) ---
-  const [studioPrompt, setStudioPrompt] = useState(
-    "Architectural twilight photo of a modern 3-bedroom luxury shortlet living room in Lekki Phase 1 Lagos, warm walnut cabinetry, floor-to-ceiling glass, soft recessed lighting, editorial hospitality photography"
-  );
-  const [studioAspect, setStudioAspect] = useState<"4:3" | "16:9" | "1:1" | "3:4">("4:3");
-  const [studioSourceBase64, setStudioSourceBase64] = useState<string | null>(null);
-  const [studioSourceMime, setStudioSourceMime] = useState<"image/jpeg" | "image/png" | "image/webp" | undefined>(undefined);
-  const [studioLoading, setStudioLoading] = useState(false);
-  const [studioError, setStudioError] = useState<string | null>(null);
-  const [studioResultUrl, setStudioResultUrl] = useState<string | null>(null);
 
   // --- Partner Registration State (PART-07, PART-08, PART-09) ---
   const [regType, setRegType] = useState<PartnerType>("agent");
@@ -343,60 +331,6 @@ export function PartnerPortal() {
     }
   };
 
-  // --- AI Photo Studio Handlers ---
-  const handleStudioSourceFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const allowed = new Set(["image/jpeg", "image/png", "image/webp"]);
-    if (!allowed.has(file.type)) {
-      setStudioError("Source photo must be JPEG, PNG, or WebP.");
-      return;
-    }
-    const dataUrl = await new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.readAsDataURL(file);
-    });
-    setStudioSourceBase64(dataUrl);
-    setStudioSourceMime(file.type as "image/jpeg" | "image/png" | "image/webp");
-    setStudioError(null);
-  };
-
-  const handleGenerateStudioImage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStudioLoading(true);
-    setStudioError(null);
-    setStudioResultUrl(null);
-    try {
-      const res = await fetch("/api/gemini/image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: studioPrompt,
-          aspectRatio: studioAspect,
-          imageSize: "1K",
-          sourceImageBase64: studioSourceBase64 ?? undefined,
-          sourceMimeType: studioSourceMime,
-          applyWatermark: true,
-          agentDisplayName: activePartner?.displayAttribution,
-        }),
-      });
-      const json = (await res.json()) as {
-        imageUrl?: string;
-        error?: string;
-      };
-      if (!res.ok || !json.imageUrl) {
-        throw new Error(json.error ?? "Image generation failed.");
-      }
-      setStudioResultUrl(json.imageUrl);
-      notify("AI listing visual generated and permanently watermarked.");
-    } catch (err) {
-      setStudioError(err instanceof Error ? err.message : "Image studio request failed.");
-    } finally {
-      setStudioLoading(false);
-    }
-  };
-
   // --- Partner Registration OTP Handlers (PART-08) ---
   const handleRequestRegOtp = async () => {
     setRegError(null);
@@ -566,7 +500,6 @@ export function PartnerPortal() {
           [
             { id: "listings", label: `My Listings (${myListings.length})` },
             { id: "submit", label: "Submit New Listing" },
-            { id: "studio", label: "AI Photo Studio" },
             { id: "register", label: "Register New Partner (KYC)" },
           ] as Array<{ id: PartnerTab; label: string }>
         ).map((item) => (
@@ -1209,115 +1142,7 @@ export function PartnerPortal() {
         </form>
       )}
 
-      {/* TAB 3: AI Listing Photo Studio (gemini-nano-banana-2.1) */}
-      {tab === "studio" && (
-        <div className="bg-white border border-stone-200 rounded-xl p-6 space-y-5">
-          <div>
-            <h3 className="font-display text-lg font-bold text-[#111318] flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#9A6B32]" />
-              AI Listing Photo Studio
-            </h3>
-            <p className="text-xs text-stone-600 mt-1">
-              Create or refine hospitality visuals from text prompts or an uploaded reference photo. Generated visuals are automatically stamped with the permanent server-side Shortlet Connect watermark before attachment.
-            </p>
-          </div>
-
-          <form onSubmit={(e) => void handleGenerateStudioImage(e)} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1">
-                Creative Prompt or Edit Instructions
-              </label>
-              <textarea
-                rows={3}
-                value={studioPrompt}
-                onChange={(e) => setStudioPrompt(e.target.value)}
-                required
-                className="w-full px-3 py-2.5 text-sm bg-[#F8F7F4] border border-stone-300 rounded-lg"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Aspect Ratio
-                </label>
-                <select
-                  value={studioAspect}
-                  onChange={(e) => setStudioAspect(e.target.value as "4:3" | "16:9" | "1:1" | "3:4")}
-                  className="w-full px-3 py-2 text-sm bg-[#F8F7F4] border border-stone-300 rounded-lg"
-                >
-                  <option value="4:3">4:3 Marketplace Card (Recommended)</option>
-                  <option value="16:9">16:9 Wide Banner</option>
-                  <option value="1:1">1:1 Square</option>
-                  <option value="3:4">3:4 Portrait</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Optional Source Photo to Edit (JPEG / PNG / WebP)
-                </label>
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(e) => void handleStudioSourceFile(e)}
-                  className="w-full text-xs text-stone-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border file:border-stone-300 file:bg-[#F8F7F4] file:text-xs file:font-semibold"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={studioLoading}
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg bg-[#111318] text-white hover:bg-stone-800 disabled:opacity-50"
-            >
-              {studioLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Sparkles className="w-4 h-4" />
-              )}
-              {studioLoading ? "Generating & Watermarking..." : "Generate Watermarked Visual"}
-            </button>
-          </form>
-
-          {studioError && (
-            <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-xs text-amber-950 flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-700" />
-              <div>
-                <p className="font-semibold">AI Studio Notice</p>
-                <p className="mt-0.5">{studioError}</p>
-              </div>
-            </div>
-          )}
-
-          {studioResultUrl && (
-            <div className="space-y-3 pt-2 border-t border-stone-200">
-              <div className="max-w-lg aspect-[4/3] rounded-xl overflow-hidden border border-stone-200">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={studioResultUrl}
-                  alt="AI generated watermarked listing visual"
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setWatermarkedPhotos((prev) => [...prev, studioResultUrl]);
-                  setTab("submit");
-                  notify("Added watermarked visual to your listing draft.");
-                }}
-                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-[#9A6B32] text-white hover:bg-[#825928]"
-              >
-                <Check className="w-4 h-4" />
-                Attach to New Listing Draft
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* TAB 4: Individual Partner Registration & KYC (PART-07, PART-08, PART-09) */}
+      {/* TAB 3: Individual Partner Registration & KYC (PART-07, PART-08, PART-09) */}
       {tab === "register" && (
         <form
           onSubmit={handleRegisterSubmit}

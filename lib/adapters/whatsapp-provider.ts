@@ -22,7 +22,7 @@ export interface WhatsAppProvider {
 }
 
 /**
- * Offline-testable WhatsApp Business Platform adapter (MSG-01 to MSG-04).
+ * WhatsApp Business Platform adapter (MSG-01 to MSG-04).
  * Never assumes the customer sent the prefilled message; flags manual lookup when edited or omitted.
  */
 export class SandboxWhatsAppAdapter implements WhatsAppProvider {

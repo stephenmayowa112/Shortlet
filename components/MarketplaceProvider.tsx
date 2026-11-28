@@ -3,21 +3,13 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { onAuthStateChanged, signInWithPopup, signOut, type User } from "firebase/auth";
 import {
-  collection,
-  doc,
-  getDocs,
-  setDoc,
-  query,
-  where,
-} from "firebase/firestore";
-import {
   auth,
-  db,
   googleAuthProvider,
   handleFirestoreError,
   OperationType,
   testFirestoreConnection,
 } from "@/lib/firebase/client";
+import { fetchApprovedPublicListingsCountFromFirestore } from "@/lib/repositories/client-listings";
 import {
   INITIAL_AUDIT_LOGS,
   INITIAL_BOOKINGS,
@@ -167,20 +159,47 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
   const [activeOpsAdminUid, setActiveOpsAdminUid] = useState<string>("ops_admin_01");
   const [customerSession, setCustomerSession] = useState<CustomerOtpSession | null>(null);
 
-  const [guestSavedIds, setGuestSavedIds] = useState<string[]>([]);
-  const [verifiedSavedIds, setVerifiedSavedIds] = useState<string[]>(["SC-APT-101"]);
+  const enableDemoSeed =
+    process.env.NODE_ENV !== "production" ||
+    process.env.NEXT_PUBLIC_ENABLE_DEMO_SEED === "true";
 
-  const [privateListings, setPrivateListings] = useState<PrivateListingRecord[]>(INITIAL_PRIVATE_LISTINGS);
-  const [featureCatalogue, setFeatureCatalogue] = useState<FeatureCatalogueItem[]>(INITIAL_FEATURE_CATALOGUE);
-  const [partnerProfiles, setPartnerProfiles] = useState<PartnerProfile[]>(INITIAL_PARTNER_PROFILES);
-  const [staffAccounts, setStaffAccounts] = useState<StaffAccount[]>(INITIAL_STAFF_ACCOUNTS);
-  const [bookings, setBookings] = useState<BookingRecord[]>(INITIAL_BOOKINGS);
-  const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>(INITIAL_LEDGER_ENTRIES);
-  const [tickets, setTickets] = useState<EnquiryTicket[]>(INITIAL_TICKETS);
-  const [inspections, setInspections] = useState<LiveInspection[]>(INITIAL_INSPECTIONS);
-  const [reviews, setReviews] = useState<ApartmentReview[]>(INITIAL_REVIEWS);
-  const [supportIssues, setSupportIssues] = useState<SupportIssue[]>(INITIAL_SUPPORT_ISSUES);
-  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
+  const [guestSavedIds, setGuestSavedIds] = useState<string[]>([]);
+  const [verifiedSavedIds, setVerifiedSavedIds] = useState<string[]>(
+    enableDemoSeed ? ["SC-APT-101"] : []
+  );
+
+  const [privateListings, setPrivateListings] = useState<PrivateListingRecord[]>(
+    enableDemoSeed ? INITIAL_PRIVATE_LISTINGS : []
+  );
+  const [featureCatalogue, setFeatureCatalogue] =
+    useState<FeatureCatalogueItem[]>(INITIAL_FEATURE_CATALOGUE);
+  const [partnerProfiles, setPartnerProfiles] = useState<PartnerProfile[]>(
+    enableDemoSeed ? INITIAL_PARTNER_PROFILES : []
+  );
+  const [staffAccounts, setStaffAccounts] = useState<StaffAccount[]>(
+    enableDemoSeed ? INITIAL_STAFF_ACCOUNTS : []
+  );
+  const [bookings, setBookings] = useState<BookingRecord[]>(
+    enableDemoSeed ? INITIAL_BOOKINGS : []
+  );
+  const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>(
+    enableDemoSeed ? INITIAL_LEDGER_ENTRIES : []
+  );
+  const [tickets, setTickets] = useState<EnquiryTicket[]>(
+    enableDemoSeed ? INITIAL_TICKETS : []
+  );
+  const [inspections, setInspections] = useState<LiveInspection[]>(
+    enableDemoSeed ? INITIAL_INSPECTIONS : []
+  );
+  const [reviews, setReviews] = useState<ApartmentReview[]>(
+    enableDemoSeed ? INITIAL_REVIEWS : []
+  );
+  const [supportIssues, setSupportIssues] = useState<SupportIssue[]>(
+    enableDemoSeed ? INITIAL_SUPPORT_ISSUES : []
+  );
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(
+    enableDemoSeed ? INITIAL_AUDIT_LOGS : []
+  );
   const [systemConfig, setSystemConfig] = useState<SystemConfig>(INITIAL_SYSTEM_CONFIG);
   const [rrIndex, setRrIndex] = useState<number>(0);
 
@@ -228,12 +247,9 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
         // Hydrate approved public listings from Firestore if present
         void (async () => {
           try {
-            const snap = await getDocs(
-              query(collection(db, "publicListings"), where("status", "==", "approved"))
-            );
-            if (!snap.empty) {
-              // Keep local rich records synced with any live Firestore documents
-              console.info(`Connected to Firestore (${snap.size} public listings synced).`);
+            const count = await fetchApprovedPublicListingsCountFromFirestore();
+            if (count > 0) {
+              console.info(`Connected to Firestore (${count} public listings synced).`);
             }
           } catch (error) {
             // Surface structured Firestore permission diagnostics without crashing public UI
@@ -258,13 +274,6 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
         createdAt: now,
       };
       setAuditLogs((prev) => [full, ...prev]);
-
-      // Best-effort Firestore append when signed in as verified Super Admin / staff
-      if (auth.currentUser?.emailVerified) {
-        void setDoc(doc(db, "auditLogs", full.logId), full).catch(() => {
-          // Local audit trail remains active even when testing offline without Firebase sign-in
-        });
-      }
     },
     []
   );
@@ -464,23 +473,6 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
             : l
         )
       );
-
-      // Sync approved allow-listed public listing to Firestore when signed in as Super Admin
-      if (status === "approved" && auth.currentUser?.emailVerified) {
-        const updatedRecord: PrivateListingRecord = {
-          ...target,
-          status: "approved",
-          verifiedPropertyBadge:
-            typeof verifiedPropertyBadge === "boolean"
-              ? verifiedPropertyBadge
-              : target.verifiedPropertyBadge,
-          updatedAt: now,
-        };
-        const pub = toPublicListing(updatedRecord);
-        if (pub) {
-          void setDoc(doc(db, "publicListings", pub.listingId), pub).catch(() => {});
-        }
-      }
 
       appendAudit({
         actorUid: firebaseUser?.uid ?? "super_admin_01",

@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { paystackAdapter } from "@/lib/adapters/payment-provider";
+import {
+  getActivePaymentProvider,
+  paystackAdapter,
+  SandboxPaystackAdapter,
+} from "@/lib/adapters/payment-provider";
+import { getRepositories } from "@/lib/repositories";
 
 const VerifySchema = z.object({
   reference: z.string().min(4).max(120),
-  expectedAmountKobo: z.number().int().positive(),
+  /** Ignored whenever a server-stored payment record exists; never trusted over stored quote. */
+  expectedAmountKobo: z.number().int().positive().optional(),
   simulateGatewaySuccess: z.boolean().optional(),
 });
 
@@ -18,18 +24,38 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // In sandbox mode, optionally simulate Paystack settling the payment and firing a signed webhook
+    const repos = getRepositories();
+    const storedPayment = await repos.payments.getPaymentByReference(parsed.data.reference);
+    if (!storedPayment) {
+      return NextResponse.json(
+        {
+          verified: false,
+          error: "Unknown or unbound payment reference.",
+        },
+        { status: 404 }
+      );
+    }
+
+    const authoritativeAmountKobo = storedPayment.expectedAmountKobo;
+    const provider = getActivePaymentProvider();
+
+    // Sandbox checkout settlement simulation is strictly disabled in production and live mode
     let webhookAccepted = false;
-    if (parsed.data.simulateGatewaySuccess) {
+    if (
+      parsed.data.simulateGatewaySuccess &&
+      process.env.NODE_ENV !== "production" &&
+      provider instanceof SandboxPaystackAdapter
+    ) {
       const tx = paystackAdapter.markSandboxGatewayPaid(
         parsed.data.reference,
-        parsed.data.expectedAmountKobo
+        authoritativeAmountKobo,
+        "NGN"
       );
       const rawWebhook = JSON.stringify({
         event: "charge.success",
         data: {
           reference: tx.reference,
-          amount: tx.amountKobo,
+          amount: tx.paidAmountKobo ?? tx.amountKobo,
           currency: "NGN",
           status: "success",
           metadata: { bookingRef: tx.bookingRef },
@@ -39,11 +65,18 @@ export async function POST(req: NextRequest) {
       const sig = paystackAdapter.signPayload(rawWebhook);
       const hookOutcome = await paystackAdapter.processWebhookEvent(rawWebhook, sig);
       webhookAccepted = hookOutcome.accepted;
+      if (hookOutcome.accepted) {
+        await repos.payments.updatePayment(storedPayment.paymentReference, {
+          status: "verified",
+          paidAmountKobo: authoritativeAmountKobo,
+          verifiedAtIso: tx.paidAtIso,
+        });
+      }
     }
 
-    const result = await paystackAdapter.verifyTransaction(
+    const result = await provider.verifyTransaction(
       parsed.data.reference,
-      parsed.data.expectedAmountKobo
+      authoritativeAmountKobo
     );
 
     if (!result.verified) {
@@ -51,7 +84,7 @@ export async function POST(req: NextRequest) {
         {
           verified: false,
           error:
-            "Server-side Paystack verification has not confirmed payment yet. Browser redirects alone never confirm bookings.",
+            "Server-side Paystack verification has not confirmed exact NGN payment yet. Browser redirects alone never confirm bookings.",
           result,
         },
         { status: 402 }

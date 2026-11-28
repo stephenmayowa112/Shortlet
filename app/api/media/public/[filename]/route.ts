@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { mediaProcessor } from "@/lib/adapters/media-processor";
 
-const ALLOWED_PRIVATE_FILES = new Set([
+const ALLOWED_PUBLIC_MEDIA_BASENAMES = new Set([
   "hero_lagos_penthouse.jpg",
   "apt_lekki_pool_villa.jpg",
   "apt_vi_cinema_suite.jpg",
@@ -11,18 +11,49 @@ const ALLOWED_PRIVATE_FILES = new Set([
   "boat_lagos_yacht_cruise.jpg",
 ]);
 
+const PRIVATE_MEDIA_DIR = path.resolve(process.cwd(), "private_media");
 const watermarkCache = new Map<string, Buffer>();
 
+/**
+ * Public watermarked media route (Task 6 #2 & #3).
+ * Security invariants:
+ * - Strictly rejects path traversal (.., /, \, URL-encoded traversal, null bytes).
+ * - Only serves watermarked output of explicitly allow-listed catalog media.
+ * - Originals in private_media/originals/, private_media/uploads/, and private_id_docs/ are NEVER served.
+ */
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ filename: string }> }
 ) {
   try {
     const { filename } = await context.params;
-    const safeName = path.basename(filename);
 
-    if (!ALLOWED_PRIVATE_FILES.has(safeName)) {
+    // Explicit traversal & separator guard before path.basename
+    let decoded = filename;
+    try {
+      decoded = decodeURIComponent(filename);
+    } catch {
+      return NextResponse.json({ error: "Invalid media path." }, { status: 400 });
+    }
+
+    if (
+      !decoded ||
+      decoded.includes("..") ||
+      decoded.includes("/") ||
+      decoded.includes("\\") ||
+      decoded.includes("\0") ||
+      path.basename(decoded) !== decoded
+    ) {
+      return NextResponse.json({ error: "Invalid media asset path." }, { status: 400 });
+    }
+
+    if (!ALLOWED_PUBLIC_MEDIA_BASENAMES.has(decoded)) {
       return NextResponse.json({ error: "Media asset not found." }, { status: 404 });
+    }
+
+    const privatePath = path.resolve(PRIVATE_MEDIA_DIR, decoded);
+    if (!privatePath.startsWith(PRIVATE_MEDIA_DIR + path.sep)) {
+      return NextResponse.json({ error: "Invalid media path." }, { status: 400 });
     }
 
     const agentParam = req.nextUrl.searchParams.get("agent")?.slice(0, 60) ?? "";
@@ -33,11 +64,10 @@ export async function GET(
       | "platform"
       | null;
 
-    const cacheKey = `${safeName}::${agentParam}::${submitterParam ?? "agent"}`;
+    const cacheKey = `${decoded}::${agentParam}::${submitterParam ?? "agent"}`;
     let outputBuffer = watermarkCache.get(cacheKey);
 
     if (!outputBuffer) {
-      const privatePath = path.join(process.cwd(), "private_media", safeName);
       const sourceBuffer = await fs.readFile(privatePath);
       outputBuffer = await mediaProcessor.watermarkPhoto({
         sourceBuffer,
@@ -52,6 +82,7 @@ export async function GET(
       headers: {
         "Content-Type": "image/jpeg",
         "Cache-Control": "public, max-age=31536000, immutable",
+        "X-Content-Type-Options": "nosniff",
         "X-Shortlet-Watermark": "permanent-server-side",
       },
     });

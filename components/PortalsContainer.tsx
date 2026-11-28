@@ -1,11 +1,33 @@
 "use client";
 
 import React, { useState } from "react";
+import dynamic from "next/dynamic";
 import { Building2, Shield, UserCog } from "lucide-react";
-import { PartnerPortal } from "@/components/PartnerPortal";
-import { AdminPortal } from "@/components/AdminPortal";
-import { SuperAdminPortal } from "@/components/SuperAdminPortal";
 import { useMarketplace } from "@/components/MarketplaceProvider";
+
+const PartnerPortal = dynamic(
+  () => import("@/components/PartnerPortal").then((mod) => mod.PartnerPortal),
+  {
+    ssr: false,
+    loading: () => <div className="py-10 text-sm text-stone-500">Loading Partner Dashboard...</div>,
+  }
+);
+
+const AdminPortal = dynamic(
+  () => import("@/components/AdminPortal").then((mod) => mod.AdminPortal),
+  {
+    ssr: false,
+    loading: () => <div className="py-10 text-sm text-stone-500">Loading Operational Admin...</div>,
+  }
+);
+
+const SuperAdminPortal = dynamic(
+  () => import("@/components/SuperAdminPortal").then((mod) => mod.SuperAdminPortal),
+  {
+    ssr: false,
+    loading: () => <div className="py-10 text-sm text-stone-500">Loading Super Admin Console...</div>,
+  }
+);
 
 type WorkspaceTab = "partner" | "operational_admin" | "super_admin";
 
@@ -66,7 +88,7 @@ export function PortalsContainer() {
               workspace === "partner" ? "text-stone-300" : "text-stone-500"
             }`}
           >
-            Agents, owners &amp; managers · KYC onboarding, watermarked uploads &amp; AI Photo Studio
+            Agents, owners &amp; managers · KYC onboarding &amp; server-watermarked media uploads
           </p>
         </button>
 

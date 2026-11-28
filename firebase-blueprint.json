@@ -308,6 +308,62 @@
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["operationalAdminCap", "serviceChargeUnitKobo", "adminSplitKobo", "founderSplitKobo", "adsOpsSplitKobo", "carPartialDayCutoffHours", "roundRobinEnabled", "videoWatermarkEnabled", "identityDocRetentionDays", "officialWhatsAppNumber", "updatedAt"]
+    },
+    "IdentityDocument": {
+      "title": "IdentityDocument",
+      "description": "Private partner identity document metadata and encrypted storage pointer. Authorised Super Admin reviewers only.",
+      "type": "object",
+      "properties": {
+        "docId": { "type": "string", "minLength": 3, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "partnerUid": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "idType": { "type": "string", "enum": ["nin_slip", "international_passport", "drivers_licence", "pvc"] },
+        "mimeType": { "type": "string", "maxLength": 64 },
+        "byteSize": { "type": "integer" },
+        "encryptedStorageKey": { "type": "string", "maxLength": 260 },
+        "retainUntilIso": { "type": "string", "format": "date-time" },
+        "uploadedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["docId", "partnerUid", "idType", "mimeType", "byteSize", "encryptedStorageKey", "retainUntilIso", "uploadedAt"]
+    },
+    "CustomerProfile": {
+      "title": "CustomerProfile",
+      "description": "Verified customer profile and merged saved listing IDs. Isolated to owning customer and Super Admin.",
+      "type": "object",
+      "properties": {
+        "customerUid": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "verifiedContact": { "type": "string", "minLength": 4, "maxLength": 254 },
+        "savedListingIds": { "type": "array" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["customerUid", "verifiedContact", "savedListingIds", "updatedAt"]
+    },
+    "PaymentRecord": {
+      "title": "PaymentRecord",
+      "description": "Server-verified Paystack payment transaction record bound 1:1 to a booking reference. Staff-only read, server-only write.",
+      "type": "object",
+      "properties": {
+        "paymentReference": { "type": "string", "minLength": 4, "maxLength": 120 },
+        "bookingRef": { "type": "string", "minLength": 4, "maxLength": 48 },
+        "amountKobo": { "type": "integer" },
+        "currency": { "type": "string", "enum": ["NGN"] },
+        "status": { "type": "string", "enum": ["initialized", "verified", "failed", "underpaid_review", "overpaid_review", "late_payment_review"] },
+        "verifiedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["paymentReference", "bookingRef", "amountKobo", "currency", "status"]
+    },
+    "CustomerReceipt": {
+      "title": "CustomerReceipt",
+      "description": "Customer-safe booking receipt with integer-kobo total and zero internal splits.",
+      "type": "object",
+      "properties": {
+        "receiptId": { "type": "string", "minLength": 4, "maxLength": 64 },
+        "bookingRef": { "type": "string", "minLength": 4, "maxLength": 48 },
+        "customerUid": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "amountPaidKobo": { "type": "integer" },
+        "currency": { "type": "string", "enum": ["NGN"] },
+        "issuedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["receiptId", "bookingRef", "customerUid", "amountPaidKobo", "currency", "issuedAt"]
     }
   },
   "firestore": {
@@ -325,6 +381,10 @@
     "/reviews/{reviewId}": { "schema": { "$ref": "#/entities/ApartmentReview" }, "description": "Completed apartment stay reviews and moderation state." },
     "/supportIssues/{issueId}": { "schema": { "$ref": "#/entities/SupportIssue" }, "description": "Booking-linked support issues and escalations." },
     "/auditLogs/{logId}": { "schema": { "$ref": "#/entities/AuditLog" }, "description": "Immutable append-only audit log." },
-    "/systemConfig/{configId}": { "schema": { "$ref": "#/entities/SystemConfig" }, "description": "Global platform configuration editable only by Super Admin." }
+    "/systemConfig/{configId}": { "schema": { "$ref": "#/entities/SystemConfig" }, "description": "Global platform configuration editable only by Super Admin." },
+    "/identityDocuments/{docId}": { "schema": { "$ref": "#/entities/IdentityDocument" }, "description": "Private partner identity document metadata accessible only to authorised Super Admin reviewers." },
+    "/customerProfiles/{customerId}": { "schema": { "$ref": "#/entities/CustomerProfile" }, "description": "Verified customer saved profile isolated to owning customer and Super Admin." },
+    "/payments/{paymentId}": { "schema": { "$ref": "#/entities/PaymentRecord" }, "description": "Server-verified Paystack payment records readable by staff only." },
+    "/receipts/{receiptId}": { "schema": { "$ref": "#/entities/CustomerReceipt" }, "description": "Customer-safe booking receipts readable by owning customer and staff." }
   }
 }

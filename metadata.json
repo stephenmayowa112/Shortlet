@@ -2,5 +2,5 @@
   "name": "Shortlet Connect",
   "description": "Mobile-first managed booking marketplace for shortlet apartments, cars, and boats in Nigeria.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }

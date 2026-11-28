@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { mediaProcessor } from "@/lib/adapters/media-processor";
+import { extractClientIp, getRateLimiter } from "@/lib/security/rate-limit";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024; // 8MB
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = extractClientIp(req.headers);
+    const limit = getRateLimiter().check(`media_upload:${ip}`, 12, 60_000);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Too many media uploads. Please wait a minute before uploading again." },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } }
+      );
+    }
+
     const contentType = req.headers.get("content-type") ?? "";
 
     if (contentType.includes("application/json")) {
@@ -20,14 +30,21 @@ export async function POST(req: NextRequest) {
       };
 
       if (body.mediaType === "video") {
+        // Honest status: unwatermarked video originals are NEVER published publicly.
         const job = await mediaProcessor.enqueueVideoProcessing({
           listingId: body.listingId ?? "DRAFT",
-          privateOriginalRef: body.privateOriginalRef ?? "private_media/uploaded_video.mp4",
+          privateOriginalRef: body.privateOriginalRef ?? "private_media/originals/uploaded_video.mp4",
           agentDisplayName: body.agentDisplayName,
           submitterType: body.submitterType,
           videoWatermarkEnabled: body.videoWatermarkEnabled,
         });
-        return NextResponse.json({ job });
+        return NextResponse.json({
+          job,
+          publicUrl: null,
+          videoBurnInImplemented: false,
+          notice:
+            "Video original is stored privately and never exposed publicly. Automated server-side FFmpeg burn-in is not implemented in V1.",
+        });
       }
 
       if (!body.base64DataUrl || !body.base64DataUrl.startsWith("data:image/")) {
@@ -68,7 +85,7 @@ export async function POST(req: NextRequest) {
         watermarkedDataUrl: `data:image/jpeg;base64,${watermarked.toString("base64")}`,
         attribution,
         originalStoredPrivately: true,
-        privateOriginalRef: `private_media/uploads/orig_${Date.now().toString(36)}.bin`,
+        privateOriginalRef: `private_media/originals/orig_${Date.now().toString(36)}.bin`,
         notice:
           "Permanent watermark applied server-side. Embedded watermarks discourage uncredited reuse but cannot prevent cropping.",
       });

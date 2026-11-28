@@ -1,18 +1,56 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "motion/react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { MarketplaceProvider, useMarketplace } from "@/components/MarketplaceProvider";
 import { Navbar, type AppView } from "@/components/Navbar";
 import { MarketplaceView } from "@/components/MarketplaceView";
-import { ListingDetailModal } from "@/components/ListingDetailModal";
-import { CustomerBookingsView } from "@/components/CustomerBookingsView";
-import { PortalsContainer } from "@/components/PortalsContainer";
-import { LegalPagesView, type PolicySectionId } from "@/components/LegalPagesView";
+import type { PolicySectionId } from "@/components/LegalPagesView";
 import { Footer } from "@/components/Footer";
-import { ConciergeChatWidget } from "@/components/ConciergeChatWidget";
 import type { PublicListing } from "@/lib/types";
+
+const ListingDetailModal = dynamic(
+  () => import("@/components/ListingDetailModal").then((mod) => mod.ListingDetailModal),
+  { ssr: false }
+);
+
+const CustomerBookingsView = dynamic(
+  () => import("@/components/CustomerBookingsView").then((mod) => mod.CustomerBookingsView),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-sm text-stone-500">
+        Loading your bookings...
+      </div>
+    ),
+  }
+);
+
+const PortalsContainer = dynamic(
+  () => import("@/components/PortalsContainer").then((mod) => mod.PortalsContainer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-sm text-stone-500">
+        Loading workspace portals...
+      </div>
+    ),
+  }
+);
+
+const LegalPagesView = dynamic(
+  () => import("@/components/LegalPagesView").then((mod) => mod.LegalPagesView),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-sm text-stone-500">
+        Loading policies...
+      </div>
+    ),
+  }
+);
 
 function ShortletConnectAppShell() {
   const { publicListings, toastMessage } = useMarketplace();
@@ -125,8 +163,6 @@ function ShortletConnectAppShell() {
           }}
         />
       )}
-
-      <ConciergeChatWidget />
 
       {toastMessage && (
         <div
